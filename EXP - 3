@@ -1,0 +1,90 @@
+IM
+
+To write a C program that implements the Playfair Cipher, which encrypts plaintext in pairs (digraphs) using a 5×5 matrix constructed from a keyword. The letter ‘J’ is typically merged with ‘I’. Repeated letters in a pair are separated with ‘X’, and padding ‘X’ is added if needed.
+def generate_key_matrix(key):
+    key = key.upper().replace("J", "I")
+    matrix = []
+    used = set()
+
+    for ch in key:
+        if ch.isalpha() and ch not in used:
+            matrix.append(ch)
+            used.add(ch)
+
+    for c in "ABCDEFGHIKLMNOPQRSTUVWXYZ":
+        if c not in used:
+            matrix.append(c)
+
+    return [matrix[i:i+5] for i in range(0, 25, 5)]
+
+def preprocess(text):
+    text = text.upper().replace("J", "I")
+    result = ""
+    i = 0
+
+    while i < len(text):
+        a = text[i]
+        if not a.isalpha():
+            i += 1
+            continue
+
+        if i+1 < len(text):
+            b = text[i+1]
+            if not b.isalpha():
+                result += a + "X"
+                i += 1
+                continue
+
+            if a == b:
+                result += a + "X"
+                i += 1
+            else:
+                result += a + b
+                i += 2
+        else:
+            result += a + "X"
+            i += 1
+
+    return result
+
+def find_position(matrix, ch):
+    for r in range(5):
+        for c in range(5):
+            if matrix[r][c] == ch:
+                return r, c
+
+def encrypt_pair(a, b, matrix):
+    r1, c1 = find_position(matrix, a)
+    r2, c2 = find_position(matrix, b)
+
+    if r1 == r2:
+        return matrix[r1][(c1+1)%5] + matrix[r2][(c2+1)%5]
+    elif c1 == c2:
+        return matrix[(r1+1)%5][c1] + matrix[(r2+1)%5][c2]
+    else:
+        return matrix[r1][c2] + matrix[r2][c1]
+
+def playfair_encrypt(text, matrix):
+    cipher = ""
+    for i in range(0, len(text), 2):
+        cipher += encrypt_pair(text[i], text[i+1], matrix)
+    return cipher
+
+
+# MAIN PROGRAM
+key = input("Enter keyword: ")
+matrix = generate_key_matrix(key)
+
+plaintext = input("Enter plaintext: ")
+processed = preprocess(plaintext)
+ciphertext = playfair_encrypt(processed, matrix)
+
+print("\nKey Matrix:")
+for row in matrix:
+    print(" ".join(row))
+
+print("\nProcessed Text:", processed)
+print("Ciphertext:", ciphertext)
+RESULT
+
+The Playfair Cipher program successfully generates a 5×5 key matrix from the given keyword. The plaintext is preprocessed by removing repeated letters and padding with 'X'. The algorithm encrypts the message two letters at a time using Playfair rules (row shift, column shift, or rectangle rule). The generated ciphertext matches the expected Playfair encryption output.
